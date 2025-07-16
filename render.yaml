@@ -1,7 +1,6 @@
 services:
-  - type: worker
-    name: daily-performance-emailer
-    runtime: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python main.py"
+  - type: web
+    name: daily-performance-manager
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
