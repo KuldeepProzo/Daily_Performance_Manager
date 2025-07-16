@@ -1,7 +1,7 @@
 # app.py
 import threading
+import os
 from flask import Flask
-import subprocess
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,13 +16,13 @@ def trigger_main():
     def run_script():
         try:
             print("🚀 Running main.py...")
-            subprocess.run(["python", "main.py"], check=True)
+            os.system("python3 main.py")
             print("✅ Script completed.")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"❌ Error running main.py: {e}")
 
     threading.Thread(target=run_script).start()
-    return "🚀 main.py started in background. Server returning instantly.", 200
+    return "🚀 main.py triggered in background.", 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
