@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 
 def analyze_deals(deal_list):
     alerts_by_deal = {}
@@ -105,23 +105,25 @@ def analyze_deals(deal_list):
                 print(f"❌ Error parsing owner assignment date: {e}")
 
         # X2/X3: Engagement gaps
-        if deal_type == "hot" and len(engagements) >= 2:
+        if deal_type == "hot":
             try:
-                t1 = engagement_ts[0]
-                t2 = engagement_ts[1]
-                gap1 = (t2 - t1).total_seconds() / 86400
-                if gap1 > 2:
-                    alerts.append("Delay between 1st & 2nd engagement")
-                    metrics["engagement_gap_1_2"] += 1
+                if len(engagement_ts) >= 2:
+                    t1 = engagement_ts[0]
+                    t2 = engagement_ts[1]
+                    gap1 = (t2 - t1).total_seconds() / 86400
+                    if gap1 > 2:
+                         alerts.append("Delay between 1st & 2nd engagement")
+                         metrics["engagement_gap_1_2"] += 1
 
-                if len(engagements) >= 3:
+                if len(engagement_ts) >= 3:
                     t3 = engagement_ts[2]
-                    gap2 = (t3 - t2).total_seconds() / 86400
+                    t2 = engagement_ts[1]
+                    gap2 = (t3 - t2).total_seconds() / 86400  # t2 is still valid here
                     if gap2 > 2:
-                        alerts.append("Delay between 2nd & 3rd engagement")
-                        metrics["engagement_gap_2_3"] += 1
+                       alerts.append("Delay between 2nd & 3rd engagement")
+                       metrics["engagement_gap_2_3"] += 1
             except Exception as e:
-                print(f"❌ Error computing engagement gaps: {e}")
+                print(f"❌ Error computing engagement gaps for deal {deal.get('id', 'unknown')}: {e}")
 
         # X4: Inactive hot deals
         if deal_type == "hot" and last_activity_str and last_activity_str != "N/A":
