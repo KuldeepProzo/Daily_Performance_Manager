@@ -1,4 +1,4 @@
-﻿from dotenv import load_dotenv
+from dotenv import load_dotenv
 load_dotenv()
 
 from src.fetch_deals import get_recent_deals_grouped_by_owner
@@ -7,7 +7,6 @@ from src.analyze_deals import analyze_deals
 from src.emailer import send_email_with_csv
 import time
 
-# Retry wrapper for email sending
 def safe_send_email(email, deals, role, metrics=None):
     try:
         send_email_with_csv(email, deals, role, metrics=metrics)
@@ -22,13 +21,13 @@ def safe_send_email(email, deals, role, metrics=None):
         except Exception as e2:
             print(f"❌ Retry also failed for {email}: {e2}")
 
-if __name__ == "__main__":
+def run():
     print("🚀 Fetching deals...")
     deals_by_owner = get_recent_deals_grouped_by_owner()
 
     if not deals_by_owner:
         print("⚠️ No deals found. Exiting.")
-        exit()
+        return
 
     print("📩 Fetching engagements...")
     all_deals = []
@@ -46,7 +45,6 @@ if __name__ == "__main__":
         deal["alerts"] = alert_map.get(deal["id"], [])
         deal["metrics"] = metrics_by_owner.get(deal.get("owner_email", "").lower(), {})
 
-    # 🔶 Group deals by owner email (only if alerts exist)
     alerts_by_owner = {}
     for deal in all_deals:
         if not deal.get("alerts"):
@@ -55,14 +53,11 @@ if __name__ == "__main__":
         if owner_email:
             alerts_by_owner.setdefault(owner_email, []).append(deal)
 
-    # 🖨️ Debug: Email distribution list
     print("\n📬 Will send to Deal Owners:")
     for email, deals in alerts_by_owner.items():
         print(f"   - {email} ({len(deals)} deal(s))")
 
-    # ✅ Only send to selected owners
     specific_owners = {
-        
         "noyal.saharan@prozo.com",
         "shaikh.quamar@prozo.com",
         "nikhil.patle@prozo.com",
@@ -70,7 +65,6 @@ if __name__ == "__main__":
         "kuldeep.thakran@prozo.com",
         "sushma.chauhan@prozo.com",
         "divij.wadhwa@prozo.com"
-
     }
 
     print("\n📧 Sending Deal Owner emails to selected owners only...")
@@ -78,9 +72,13 @@ if __name__ == "__main__":
         if email in specific_owners:
             safe_send_email(email, deals, role="OWNER", metrics=metrics_by_owner.get(email.lower(), {}))
 
-    # 📧 Always send summary to Kuldeep
     print("\n📧 Sending summary email to Kuldeep...")
     all_alerted_deals = [deal for deal in all_deals if deal.get("alerts")]
     safe_send_email("kuldeep.thakran@prozo.com", all_alerted_deals, role="SUMMARY")
 
     print("✅ Process complete. Exiting.")
+
+
+# Only run locally if executed directly
+if __name__ == "__main__":
+    run()
