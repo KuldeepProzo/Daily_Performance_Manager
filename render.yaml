@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: daily-performance-manager
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: EMAIL_USERNAME
+        value: your-email@example.com
+      - key: EMAIL_PASSWORD
+        value: your-password
+      - key: HUBSPOT_TOKEN
+        value: your-hubspot-token
+      # Add more if needed
